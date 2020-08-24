@@ -1,0 +1,13 @@
+[DEVELOPMENT]
+USER = sachinaryal
+PASSWORD = mypassword
+HOST = 127.0.0.1
+PORT = 5432
+DATABASE = beastcrawl
+
+[PRODUCTION]
+USER = vcrxkdbbcptvmv
+PASSWORD = 4d4b15750f02f80a21c70793e9b632f78874706fb56f96132dfd81e28eaa7343
+HOST = ec2-54-197-254-117.compute-1.amazonaws.com
+PORT = 5432
+DATABASE = dcl8o39haapn1e
