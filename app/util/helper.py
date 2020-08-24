@@ -21,7 +21,7 @@ def send_sighup_signal(process_id):
 
 def kill_process(process_id):
     try:
-        os.system("kill -9 {}".format(process_id))
+        os.system("kill -15 {}".format(process_id))
     except Exception as ex:
         print("error occurred while killing process.")
 

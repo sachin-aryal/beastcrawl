@@ -12,13 +12,14 @@ import signal
 
 from result_handler import ResultHandler
 from job_handler import JobHandler
+from util.helper import update_row
 
-
-logger = logging.getLogger("Task Runner_{}".format(os.getpid()))
+PID = os.getpid()
+logger = logging.getLogger("Task Runner_{}".format(PID))
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 DB_CONF_PATH = os.path.join(CURRENT_PATH, "postgres.cnf")
 
-job_generator = None
+job_generator = connection = environment = None
 
 
 def poll_db(sighhup, frame):
@@ -26,7 +27,18 @@ def poll_db(sighhup, frame):
     job_generator.reload = True
 
 
+def exit_gracefully(signum, frame):
+    try:
+        update_row(connection,
+                   "UPDATE app_processinfo SET status = 'KILLED' WHERE process_id = {}".format(PID))
+    except Exception as ex:
+        pass
+    sys.exit(0)
+
+
 signal.signal(signal.SIGHUP, poll_db)
+signal.signal(signal.SIGINT, exit_gracefully)
+signal.signal(signal.SIGTERM, exit_gracefully)
 
 
 def parse_config():
@@ -50,11 +62,11 @@ def connect_db(config):
 
 
 def main():
+    global job_generator, connection
     config = parse_config()
-    conn = connect_db(config)
-    event_handler = ResultHandler(conn)
-    global job_generator
-    job_generator = JobHandler(conn, event_handler)
+    connection = connect_db(config)
+    event_handler = ResultHandler(connection)
+    job_generator = JobHandler(connection, event_handler)
 
     try:
         eventlet = gevent.spawn(event_handler.result_queue_handler)
